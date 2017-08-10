@@ -47,6 +47,7 @@ def get_all_cinema(cityurl):
 
 
 def get_cinema_movie(cinema_url):
+    print cinema_url
     result = []
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
@@ -56,22 +57,30 @@ def get_cinema_movie(cinema_url):
         'Accept-Language': 'zh-CN,zh;q=0.8',
         'Cache-Control': 'max-age=0',
         'Host': 'sh.meituan.com',
+        'Cookie':'oc=9hjuIXLNfLPoDxVuC8F_s_rG5AFahUfX2wuzIKa4dlBSifhaXAKNFzBqgMOXZ4nZUfjwLXt7x-8fk8EOwgC9NMGwDMrCkwskjiZEz8sdUrG9dmEhNKneqrXSMNUZEMEwqqrQNw3hzUbLwSdHnUfRtU6lW3kFvzXjSa9aB7LjLp8; expires=Sat, 03-Aug-2047 06:45:57 GMT; path=/; domain=.meituan.com'
     }
     html = requests.get(cinema_url, headers=headers).text
     soup = bs(html, 'html.parser')
     info = soup.select('.movie-info')
+
     for each in info:
         soup = bs(str(each), 'html.parser')
         movie_name = soup.select('h3')[0].string
+        print movie_name
         showtime = re.findall('<div class="show-time">(.*?)</div>', str(soup), re.S)[0]
         showtime_list = re.findall('data-date="(.*?)"', showtime, re.S)
         table = soup.select('table')
-        count = 0
+        count2 = -1
+
         for each2 in table:
+
+            count2 += 1
+            print showtime_list
             k_price = ''
-            movie_date = showtime_list[count]
+            movie_date = showtime_list[count2]
             soup = bs(str(each2), 'html.parser')
             tr = soup.select('tr')
+
             for each3 in tr:
                 price = ''
                 try:
@@ -82,10 +91,11 @@ def get_cinema_movie(cinema_url):
                     try:
                         pricemsg = td[3]
                         price = re.findall('"background-image: url\(\/(.*?)>', pricemsg, re.S)
+                        enabled=1
                     except:
-                        pass
-                except:
-                    pass
+                        enabled=0
+                except Exception as err:
+                    enabled=0
 
                 if len(price) == 2:
                     k_price = ''
@@ -98,7 +108,6 @@ def get_cinema_movie(cinema_url):
                         ir = requests.get('http://' + url, verify=False)
                         save_img('1.png', ir)
                         t = tesseract(x, y, '1.png')
-                        time.sleep(0.5)
                         k_price = k_price + t
 
                 if len(price) == 7:
@@ -117,14 +126,15 @@ def get_cinema_movie(cinema_url):
                         t = tesseract(x, y, '1.png')
                         k_price = str(k_price) + str(t)
                 k_price = k_price.replace('\n', '')
-                try:
+
+                if enabled==1:
                     result.append({'movie_name': movie_name, 'movie_time': movie_time, 'movie_date': movie_date,
                                    'version': version, 'room': room, 'price': k_price})
-                except:
-                    pass
+                    print movie_name,movie_time,movie_date,version,room,k_price
+
     return result
 
 
 print get_city_url('上海')
-print get_all_cinema('sh.meituan.com')
-print get_cinema_movie('http://sh.meituan.com/shop/58174')
+for key,value in get_all_cinema('sh.meituan.com').items():
+    print get_cinema_movie(value)
