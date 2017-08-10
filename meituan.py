@@ -97,7 +97,7 @@ def get_cinema_movie(cinema_url):
                 except Exception as err:
                     enabled=0
 
-                if len(price) == 2:
+                if len(price) <= 3:
                     k_price = ''
                     for each in price:
                         url = re.findall('\/(.*?)\@', each, re.S)[0]
