@@ -66,21 +66,16 @@ def get_cinema_movie(cinema_url):
     for each in info:
         soup = bs(str(each), 'html.parser')
         movie_name = soup.select('h3')[0].string
-        print movie_name
         showtime = re.findall('<div class="show-time">(.*?)</div>', str(soup), re.S)[0]
         showtime_list = re.findall('data-date="(.*?)"', showtime, re.S)
         table = soup.select('table')
         count2 = -1
-
         for each2 in table:
-
             count2 += 1
-            print showtime_list
             k_price = ''
             movie_date = showtime_list[count2]
             soup = bs(str(each2), 'html.parser')
             tr = soup.select('tr')
-
             for each3 in tr:
                 price = ''
                 try:
